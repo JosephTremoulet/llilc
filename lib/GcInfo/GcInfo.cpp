@@ -369,13 +369,6 @@ bool GcInfoRecorder::runOnMachineFunction(MachineFunction &MF) {
         assert(Alloca->getName().find(".wineh.spillslot") != StringRef::npos);
         // WinEH shouldn't spill GC-aggregates
         assert(!GcInfo::isGcAggregate(Alloca->getAllocatedType()));
-
-        // The unreported slots are live across safepoints in the
-        // EH path, so the execution is correct unless we take the
-        // exception path.
-        assert(!(Context->Options->ExecuteHandlers &&
-                 Context->Options->DoInsertStatepoints) &&
-               "Untested: Use at your own risk");
       }
 #endif // !NDEBUG
     }
