@@ -1001,7 +1001,7 @@ void GenIR::insertIRForUnmanagedCallFrame() {
 AllocaInst *GenIR::createAlloca(Type *T, Value *ArraySize, const Twine &Name) {
   AllocaInst *AllocaInst = LLVMBuilder->CreateAlloca(T, ArraySize, Name);
 
-  if (GcInfo::isGcType(T)) {
+  if (GcInfo::isGcAggregate(T)) {
     GcFuncInfo->recordGcAlloca(AllocaInst);
   }
 
@@ -1133,24 +1133,9 @@ void GenIR::zeroInit(Value *Var) {
 void GenIR::zeroInitLocals() {
   if (isZeroInitLocals()) {
     for (const auto &LocalVar : LocalVars) {
-      if (!GcInfo::isGcAllocation(LocalVar)) {
-        // All GC values are zero-initizlied in the post-pass.
-        // So, only initialize the remaining ones if necessary.
-        zeroInit(LocalVar);
-      }
+      zeroInit(LocalVar);
     }
   }
-
-#ifndef NDEBUG
-  // Ensure all GC-Locals are recorded to be initialized
-  // Regardless of isZeroInitLocals()
-  for (const auto &LocalVar : LocalVars) {
-    if (GcInfo::isGcAllocation(LocalVar)) {
-      assert(GcFuncInfo->hasRecord(cast<AllocaInst>(LocalVar)) &&
-             "Missing GcAlloc Record");
-    }
-  }
-#endif // !NDEBUG
 }
 
 void GenIR::zeroInitBlock(Value *Address, uint64_t Size) {
@@ -4372,6 +4357,10 @@ IRNode *GenIR::loadArgAddress(uint32_t ArgOrdinal) {
 IRNode *GenIR::loadManagedAddress(Value *UnmanagedAddress) {
   Type *ElementType = UnmanagedAddress->getType()->getPointerElementType();
   Type *ManagedPointerType = getManagedPointerType(ElementType);
+
+  if (GcInfo::isGcPointer(ElementType)) {
+    GcFuncInfo->recordGcAlloca(cast<AllocaInst>(UnmanagedAddress));
+  }
 
   // ldloca and ldarga have to return managed pointers. Since we can't influence
   // the address space of the pointer alloca returns we have to add an

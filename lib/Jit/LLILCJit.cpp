@@ -364,6 +364,7 @@ CorJitResult LLILCJit::compileMethod(ICorJitInfo *JitInfo,
         // If using Precise GC, run the GC-Safepoint insertion
         // and lowering passes before generating code.
         legacy::PassManager Passes;
+        Passes.add(createPromoteMemoryToRegisterPass());
         Passes.add(createPlaceSafepointsPass());
         Passes.add(createRewriteStatepointsForGCPass());
         Passes.run(*M);
