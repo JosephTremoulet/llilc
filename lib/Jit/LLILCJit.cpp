@@ -345,7 +345,7 @@ CorJitResult LLILCJit::compileMethod(ICorJitInfo *JitInfo,
     // Construct the jitting layers.
     EEMemoryManager MM(&Context);
     ObjectLoadListener Listener(&Context);
-    orc::EEObjectLinkingLayer<decltype(Listener)> Loader(Listener);
+    orc::ObjectLinkingLayer<decltype(Listener)> Loader(Listener);
     auto ReserveUnwindSpace = [&MM](std::unique_ptr<object::ObjectFile> Obj) {
       MM.reserveUnwindSpace(*Obj);
       return std::move(Obj);
