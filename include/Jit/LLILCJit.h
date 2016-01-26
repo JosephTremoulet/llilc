@@ -183,7 +183,7 @@ public:
     // Address UINT64_MAX means that we will resolve relocations for this symbol
     // manually and the dynamic linker will skip relocation resolution for this
     // symbol.
-    assert(NameToHandleMap->count(Name) == 1);
+    // assert(NameToHandleMap->count(Name) == 1);
     return llvm::RuntimeDyld::SymbolInfo(UINT64_MAX,
                                          llvm::JITSymbolFlags::None);
   }
